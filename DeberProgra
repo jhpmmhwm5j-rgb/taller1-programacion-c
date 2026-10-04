@@ -1,0 +1,181 @@
+#include <stdio.h> 
+#include <string.h>
+
+int main() 
+{
+   
+    char id[50] = "";
+    char nombre[100] = "";
+    int stock = 0;
+    float precio = 0.0f;
+    float ganancias_totales = 0.0f;
+    int registrado = 0; 
+
+    int opcion = 0;
+
+    do {
+        
+        printf("\n==================================================\n");
+        printf("\tSISTEMA DE GESTION DE PRODUCTO\n");
+        printf("==================================================\n");
+        printf("1.\tRegistrar producto\n");
+        printf("2.\tVender unidades\n");
+        printf("3.\tReabastecer stock\n");
+        printf("4.\tConsultar informacion actual\n");
+        printf("5.\tConsultar ganancias acumuladas\n");
+        printf("6.\tSalir del programa\n");
+        printf("--------------------------------------------------\n");
+        printf("Seleccione una opcion (1-6): ");
+
+        if (scanf("%d", &opcion) != 1) {
+            printf("\n[ERROR]\tEntrada no valida. Debe ingresar un valor numerico.\n");
+            while (getchar() != '\n'); 
+            continue;
+        }
+        while (getchar() != '\n'); 
+
+        switch (opcion) {
+            case 1:
+                printf("\n--- REGISTRO DE PRODUCTO ---\n");
+                printf("Ingrese el ID del producto:\t");
+                fgets(id, sizeof(id), stdin);
+                id[strcspn(id, "\n")] = '\0'; 
+
+                printf("Ingrese el nombre del producto:\t");
+                fgets(nombre, sizeof(nombre), stdin);
+                nombre[strcspn(nombre, "\n")] = '\0';
+
+                
+                do {
+                    printf("Ingrese la cantidad inicial en stock (>= 0):\t");
+                    if (scanf("%d", &stock) != 1 || stock < 0) {
+                        printf("\t[!] Entrada invalida. Ingrese un entero mayor o igual a cero.\n");
+                        while (getchar() != '\n');
+                        stock = -1;
+                    }
+                } while (stock < 0);
+
+                
+                do {
+                    printf("Ingrese el precio unitario (> 0):\t$");
+                    if (scanf("%f", &precio) != 1 || precio <= 0.0f) {
+                        printf("\t[!] Entrada invalida. Ingrese un valor real estrictamente positivo.\n");
+                        while (getchar() != '\n');
+                        precio = -1.0f;
+                    }
+                } while (precio <= 0.0f);
+                while (getchar() != '\n');
+
+                registrado = 1;
+                printf("\n[EXITO]\tProducto registrado satisfactoriamente.\n");
+                break;
+
+            case 2:
+                if (!registrado) {
+                    printf("\n[ADVERTENCIA]\tDebe registrar un producto antes de realizar ventas (Opcion 1).\n");
+                    break;
+                }
+
+                if (stock == 0) {
+                    printf("\n[AVISO]\tStock agotado. No hay unidades disponibles para procesar la venta.\n");
+                    break;
+                }
+
+                int cantidad_vender;
+                float descuento = 0.0f;
+
+                printf("\n--- VENTA DE PRODUCTO ---\n");
+                printf("Stock disponible actual:\t%d unidades\n", stock);
+                printf("Ingrese la cantidad de unidades a vender:\t");
+
+                if (scanf("%d", &cantidad_vender) != 1 || cantidad_vender <= 0) {
+                    printf("[ERROR]\tCantidad invalida. Debe ser un numero entero positivo.\n");
+                    while (getchar() != '\n');
+                    break;
+                }
+
+                if (cantidad_vender > stock) {
+                    printf("\n[DENEGADO]\tStock insuficiente. No puede vender mas de %d unidades.\n", stock);
+                    while (getchar() != '\n');
+                    break;
+                }
+
+                printf("Ingrese el porcentaje de descuento (0 a 100%%):\t");
+                if (scanf("%f", &descuento) != 1 || descuento < 0.0f || descuento > 100.0f) {
+                    printf("[ERROR]\tPorcentaje invalido. Ingrese un numero entre 0 y 100.\n");
+                    while (getchar() != '\n');
+                    break;
+                }
+                while (getchar() != '\n');
+
+                float factor_descuento = 1.0f - (descuento / 100.0f);
+                float precio_unitario_final = precio * factor_descuento;
+                float subtotal_venta = cantidad_vender * precio_unitario_final;
+
+                stock -= cantidad_vender;
+                ganancias_totales += subtotal_venta;
+
+                printf("\n--- COMPROBANTE DE VENTA ---\n");
+                printf("Unidades despachadas:\t%d\n", cantidad_vender);
+                printf("Descuento concedido:\t%.2f%%\n", descuento);
+                printf("Total facturado:\t$%.2f\n", subtotal_venta);
+                printf("Stock restante en bodega:\t%d unidades\n", stock);
+                break;
+
+            case 3:
+                if (!registrado) {
+                    printf("\n[ADVERTENCIA]\tDebe registrar un producto antes de reabastecer (Opcion 1).\n");
+                    break;
+                }
+
+                int cantidad_reabastecer;
+                printf("\n--- REABASTECIMIENTO DE PRODUCTO ---\n");
+                printf("Ingrese el numero de unidades a sumar al stock:\t");
+                if (scanf("%d", &cantidad_reabastecer) != 1 || cantidad_reabastecer <= 0) {
+                    printf("[ERROR]\tLa cantidad debe ser un numero entero estrictamente positivo.\n");
+                    while (getchar() != '\n');
+                    break;
+                }
+                while (getchar() != '\n');
+
+                stock += cantidad_reabastecer;
+                printf("\n[EXITO]\tReabastecimiento completado.\n");
+                printf("Stock disponible consolidado:\t%d unidades\n", stock);
+                break;
+
+            case 4:
+                if (!registrado) {
+                    printf("\n[ADVERTENCIA]\tAun no existe ningun producto en el sistema (Opcion 1).\n");
+                    break;
+                }
+
+                printf("\n==================================================\n");
+                printf("\tFICHA TECNICA DEL PRODUCTO\n");
+                printf("==================================================\n");
+                printf("Codigo ID:\t\t%s\n", id);
+                printf("Nombre:\t\t\t%s\n", nombre);
+                printf("Stock en bodega:\t%d unidades\n", stock);
+                printf("Precio unitario base:\t$%.2f\n", precio);
+                printf("==================================================\n");
+                break;
+
+            case 5:
+                printf("\n==================================================\n");
+                printf("\tBALANCE ECONOMICO DE VENTAS\n");
+                printf("==================================================\n");
+                printf("Ingresos brutos acumulados:\t$%.2f\n", ganancias_totales);
+                printf("==================================================\n");
+                break;
+
+            case 6:
+                printf("\nFinalizando sesion. Operaciones guardadas en memoria exitosamente.\n");
+                break;
+
+            default:
+                printf("\n[ERROR]\tOpcion no reconocida. Seleccione una opcion valida entre 1 y 6.\n");
+                break;
+        }
+    } while (opcion != 6);
+
+    return 0;
+}
